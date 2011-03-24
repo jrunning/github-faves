@@ -8,19 +8,10 @@
             , "128" : "sample-128.png"
             }
 , "background_page" : "background.html"
-, "content_scripts" : [ { "matches" : [ "*://github.com/account"
-                                      , "*://www.github.com/account"
-                                      ]
-                        , "js"      : [ "setup.js" ]
-                        }
-                      , { "matches" : [ "*://github.com/*"
+, "content_scripts" : [ { "matches" : [ "*://github.com/*"
                                       , "*://www.github.com/*"
                                       ]
                         , "js"      : [ "contentscript.js" ]
                         }
                       ]
-, "page_action" : { "default_popup" : "popup.html"
-                  , "default_title" : "Sup!"
-                  , "default_icon"  : "sample-48.png"
-                  }
 }

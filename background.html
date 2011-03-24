@@ -53,26 +53,82 @@
       };
 
       function saveCredentials(username, apiToken, callback) {
+        localStorage['github-username']   = username;
+        localStorage['github-api-token']  = apiToken;
+
         callback();
       }
 
-      // Wire up the listener.
-      // chrome.extension.onRequest.addListener(onRequest);
-      chrome.tabs.create( { url : 'https://github.com/account' },
-        function(tab) {
-        }
-      );
+      function hasCredentials(sendResponse) {
+        sendResponse( { message           : 'hasCredentials?'
+                      , 'hasCredentials' : localStorage['github-username'] && localStorage['github-api-token']
+                    }
+        );
+      }
 
+      function loadCredentials(sendResponse) {
+        var username, apiToken;
+
+        if(     username  = localStorage['github-username']
+            &&  apiToken  = localStorage['github-api-token']
+        ) {
+          sendResponse({ message : 'credentials', username : username, apiToken : apiToken });
+        } else {
+          sendResponse({ message : 'credentials' });
+        }
+      }
+
+      function doSetup() {
+        chrome.tabs.getSelected(null, function(currentTab) {
+          var tempA = document.createElement('a');
+          tempA.href = currentTab.url;
+
+          if(tempA.pathname == '/account') {
+            // if we're looking at the Account page, use that tab
+            chrome.tabs.executeScript(currentTab.id, { file : 'setup.js' });
+          } else {
+            // otherwise open it in a new tab
+            chrome.tabs.create( { url : 'https://github.com/account' },
+              function(newTab) {
+                var runSetupWhenReady = function runSetupWhenReady(tabId, changeInfo, tab) {
+                  // so this doesn't get run on every page update
+                  chrome.tabs.onUpdated.removeListener(runSetupWhenReady);
+
+                  // wait til the tab's done loading
+                  if(tabId == newTab.id && changeInfo.status == 'complete') {
+                    chrome.tabs.executeScript(tabId, { file : 'setup.js' });
+                  }
+                };
+                chrome.tabs.onUpdated.addListener(runSetupWhenReady);
+              }
+            );
+          }
+        });
+      }
+
+      // big generic listener to all extension messages
       chrome.extension.onRequest.addListener(function(request, sender, callback) {
         switch(request.message) {
-          case 'acquired-credentials':
+          case 'acquiredCredentials':
             saveCredentials(request.username, request.apiToken, callback);
             break;
 
-          case 'close-tab':
-            console.log('y\'ello!!')
-            console.log(sender);
+          case 'doSetup':
+            doSetup();
+            break;
+
+          case 'hasCredentials?':
+            hasCredentials(callback);
+            break;
+
+/*        case 'getCredentials':
+            loadCredentials(callback);
+            break;
+*/
+          case 'closeTab':
+            console.log('yello');
             chrome.tabs.remove(sender.tab.id);
+            // returnToTab.selected = true;
             break;
         }
       });
