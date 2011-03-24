@@ -1,0 +1,26 @@
+{ "name"    : "github-faves"
+, "version" : "0.1"
+, "description" : ""
+, "permissions" : [ "tabs"
+                  , "*://*.github.com/*"
+                  ]
+, "icons":  { "48"  : "sample-48.png"
+            , "128" : "sample-128.png"
+            }
+, "background_page" : "background.html"
+, "content_scripts" : [ { "matches" : [ "*://github.com/account"
+                                      , "*://www.github.com/account"
+                                      ]
+                        , "js"      : [ "setup.js" ]
+                        }
+                      , { "matches" : [ "*://github.com/*"
+                                      , "*://www.github.com/*"
+                                      ]
+                        , "js"      : [ "contentscript.js" ]
+                        }
+                      ]
+, "page_action" : { "default_popup" : "popup.html"
+                  , "default_title" : "Sup!"
+                  , "default_icon"  : "sample-48.png"
+                  }
+}
