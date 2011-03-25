@@ -23,7 +23,7 @@
                 for(var i = 0; i < numGists; i++) {
                   if(gists[i].files[0] == 'github-faves.json') {
                     callback(gists[i].repo);
-                    return;
+                 { hello : "World" }   return;
                   }
                 }
                   
@@ -41,52 +41,6 @@
           xhr.send();
         }
       }
-
-      /**
-       * @param callback Function If the response from fetching url has a
-       *     HTTP status of 200, this function is called with a JSON decoded
-       *     response.  Otherwise, this function is called with null.
-       * /
-      function createGist(callback) {
-        // TODO: Must use token to associate with my account
-        var xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function(data) {
-          if (xhr.readyState == 4) {
-            if (xhr.status == 200) {
-              console.log(xhr.responseText);
-              var gists = JSON.parse(xhr.responseText).gists;
-
-              callback(gists[0].repo);
-            } else {
-              callback(null);
-            }
-          }
-        }
-        // Note that any URL fetched here must be matched by a permission in
-        // the manifest.json file!
-        // var url = 'http://search.twitter.com/trends/current.json?exclude=hashtags';
-        var url = 'http://gist.github.com/api/v1/json/new';
-        var formData = new FormData();
-        formData.append('files[github-faves.json]', '{}');
-
-        xhr.open('POST', url, true);
-        xhr.send(formData);
-      }
-      */
-
-      /**
-       * Handles data sent via chrome.extension.sendRequest().
-       * @param request Object Data sent in the request.
-       * @param sender Object Origin of the request.
-       * @param callback Function The method to call when the request completes.
-       */
-      function onRequest(request, sender, callback) {
-        // Only supports the 'fetchTwitterFeed' method, although this could be
-        // generalized into a more robust RPC system.
-        if (request.action == 'createGist') {
-          createGist(callback);
-        }
-      };
 
       function saveCredentials(username, apiToken, callback) {
         localStorage['github-username']   = username;
