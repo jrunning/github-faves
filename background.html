@@ -6,6 +6,7 @@
 -->
 <html>
   <head>
+    <script src="gister.js"></script>
   </head>
   <body>
     <script>
@@ -45,7 +46,7 @@
        * @param callback Function If the response from fetching url has a
        *     HTTP status of 200, this function is called with a JSON decoded
        *     response.  Otherwise, this function is called with null.
-       */
+       * /
       function createGist(callback) {
         // TODO: Must use token to associate with my account
         var xhr = new XMLHttpRequest();
@@ -71,6 +72,7 @@
         xhr.open('POST', url, true);
         xhr.send(formData);
       }
+      */
 
       /**
        * Handles data sent via chrome.extension.sendRequest().
