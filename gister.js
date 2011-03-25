@@ -41,27 +41,46 @@ Gister.prototype.createOne = function createOne(filename, data, options, callbac
 
 // get the JSON content of a gist as an object
 Gister.prototype.getJSON = function(repoId, callback) {
-  this.get(repoId, function(data) {
-    callback(JSON.parse(data));
-  });
+  this.get(repoId, jsonifyCallback(callback));
 };
 
 // get the content of a gist
 Gister.prototype.get = function get(repoId, callback) {
-  var xhr       = this.getXHR(callback)
-    , uri       = this.GIST_URI + repoId + '.txt'
-  ;
+  var uri = this.GIST_URI + repoId + '.txt';
 
-  xhr.open('GET', uri, true);
-  xhr.send();
+  this.genericGet(uri, callback);
 };
 
+// get a list of a user's public gists
+Gister.prototype.getGists = function getGists(username, callback) {
+  this.genericGet(this.BASE_URI + username, jsonifyCallback(callback));
+};
+
+
 // TODO: Make these private
+
+// return an XHR object with its response handler set nicely
 Gister.prototype.getXHR = function getXHR(responseHandler) {
   var xhr = new XMLHttpRequest();
   xhr.onreadystatechange = this.xhrResponseHandler(xhr, responseHandler);
 
   return xhr;
+};
+
+// return a function that parses its JSON parameter before handing it to a callback
+Gister.prototype.jsonifyCallback = function jsonifyCallback(callback) {
+  var jsonifiedCallback = function jsonifiedCallback(data) {
+    callback(JSON.parse(data));
+  };
+
+  return jsonifiedCallback;
+};
+
+// a generified Ajax GET
+Gister.prototype.genericGet = function genericGet(uri, callback) {
+  var xhr = this.getXHR(callback);
+  xhr.open('GET', uri, true);
+  xhr.send();
 };
 
 Gister.prototype.xhrResponseHandler = function xhrResponseHandler(xhr, callback) {

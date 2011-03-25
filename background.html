@@ -1,16 +1,17 @@
 <!DOCTYPE html>
-<!--
- * Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
- * source code is governed by a BSD-style license that can be found in the
- * LICENSE file.
--->
 <html>
   <head>
     <script src="gister.js"></script>
   </head>
   <body>
     <script>
-      function getGistId(username, callback) {
+      function bind(f, obj) {
+        return function() {
+          return f.apply(obj, arguments);
+        };
+      }
+      
+      var getGistId = function getGistId(username, callback) {
         if(!localStorage['gistId']) {
           var xhr = new XMLHttpRequest();
           xhr.onreadystatechange = function(data) {
@@ -40,90 +41,103 @@
           xhr.open('GET', url, true);
           xhr.send();
         }
+      };
+
+      function GHFaves() {
       }
 
-      function saveCredentials(username, apiToken, callback) {
-        localStorage['github-username']   = username;
-        localStorage['github-api-token']  = apiToken;
+      GHFaves.prototype.messageHandlers = {
+        'acquiredCredentials' : function msg_acquiredCredentials(request, _, callback) {
+          this.saveCredentials(request.username, request.apiToken, callback);
+        },
+
+        'doSetup'             : function() { this.doSetup(); },
+        
+        'hasCredentials?'     : function msg_hasCredentials(_, _, callback) {
+          this.hasCredentials(callback);
+        }
+      };
+
+      GHFaves.prototype.saveCredentials = function saveCredentials(username, apiToken, callback) {
+        localStorage['github-username']   = this.username = username;
+        localStorage['github-api-token']  = this.apiToken = apiToken;
 
         callback();
-      }
+      };
 
-      function hasCredentials(sendResponse) {
-        sendResponse( { message           : 'hasCredentials?'
-                      , 'hasCredentials' : localStorage['github-username'] && localStorage['github-api-token']
-                    }
+      GHFaves.prototype.hasCredentials = function hasCredentials(sendResponse) {
+        sendResponse( { 'message'         : 'hasCredentials?'
+                      , 'hasCredentials'  : localStorage['github-username'] && localStorage['github-api-token']
+                      }
         );
-      }
+      };
 
-      function loadCredentials(sendResponse) {
-        var username, apiToken;
-
-        if(     username  = localStorage['github-username']
-            &&  apiToken  = localStorage['github-api-token']
+      GHFaves.prototype.loadCredentials = function loadCredentials(sendResponse) {
+        if(     this.username = localStorage['github-username']
+            &&  this.apiToken  = localStorage['github-api-token']
         ) {
-          sendResponse({ message : 'credentials', username : username, apiToken : apiToken });
+          sendResponse({ message : 'credentials', username : this.username, apiToken : this.apiToken });
         } else {
           sendResponse({ message : 'credentials' });
         }
-      }
+      };
 
-      function doSetup() {
-        chrome.tabs.getSelected(null, function(currentTab) {
-          var tempA = document.createElement('a');
-          tempA.href = currentTab.url;
+      GHFaves.prototype.doSetup = function doSetup() {
+        chrome.tabs.getSelected(null, bind(function(currentTab) {
+          var url = this.parseURL(currentTab.url);
 
-          if(tempA.pathname == '/account') {
+          if(url.pathname == '/account') {
             // if we're looking at the Account page, use that tab
             chrome.tabs.executeScript(currentTab.id, { file : 'setup.js' });
           } else {
             // otherwise open it in a new tab
             chrome.tabs.create( { url : 'https://github.com/account' },
-              function(newTab) {
-                var runSetupWhenReady = function runSetupWhenReady(tabId, changeInfo, tab) {
+              bind(function(newTab) {
+                var runSetupWhenReady = bind(function runSetupWhenReady(tabId, changeInfo, tab) {
                   // so this doesn't get run on every page update
                   chrome.tabs.onUpdated.removeListener(runSetupWhenReady);
 
+                  var pathname = this.parseURL(newTab.url).pathname;
+
                   // wait til the tab's done loading
-                  if(tabId == newTab.id && changeInfo.status == 'complete') {
-                    chrome.tabs.executeScript(tabId, { file : 'setup.js' });
+                  if(pathname == '/account' && changeInfo.status == 'complete') {
+                    // TODO: Figure out why this isn't happening
+                    chrome.tabs.executeScript(newTab.id, { file : 'setup.js' });
                   }
-                };
+                }, this);
+
                 chrome.tabs.onUpdated.addListener(runSetupWhenReady);
-              }
+              }, this)
             );
           }
-        });
+        }, this));
+      };
+
+      // a.k.a. poorMansParseURL
+      GHFaves.prototype.parseURL = function parseURL(url) {
+        var dummyLink = document.createElement('a');
+        dummyLink.href = url;
+
+        return dummyLink;
       }
+
+      var faves = new GHFaves();
 
       // big generic listener to all extension messages
       chrome.extension.onRequest.addListener(function(request, sender, callback) {
-        switch(request.message) {
-          case 'acquiredCredentials':
-            saveCredentials(request.username, request.apiToken, callback);
-            break;
+        var msgHandler;
 
-          case 'doSetup':
-            doSetup();
-            break;
-
-          case 'hasCredentials?':
-            getGistId('jrunning', function() { console.log(arguments); });
-            hasCredentials(callback);
-            break;
-
-/*        case 'getCredentials':
-            loadCredentials(callback);
-            break;
-*/
-          case 'closeTab':
-            console.log('yello');
-            chrome.tabs.remove(sender.tab.id);
-            // returnToTab.selected = true;
-            break;
+        if(msgHandler = faves.messageHandlers[request.message]) {
+          msgHandler.apply(faves, arguments);
+        } else {
+          switch(request.message) {
+            case 'closeTab':
+              chrome.tabs.remove(sender.tab.id);
+              // returnToTab.selected = true;
+              break;
+          }
         }
       });
-
     </script>
   </body>
 </html>
