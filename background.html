@@ -115,10 +115,18 @@
 
       // a.k.a. poorMansParseURL
       GHFaves.prototype.parseURL = function parseURL(url) {
-        var dummyLink = document.createElement('a');
-        dummyLink.href = url;
+        var dummy = document.createElement('a');
+        dummy.href = url;
 
-        return dummyLink;
+        return  { protocol  : dummy.protocol
+                , host      : dummy.host
+                , hostname  : dummy.hostname
+                , port      : dummy.port
+                , pathname  : dummy.pathname
+                , search    : dummy.search
+                , hash      : dummy.hash
+                }
+        ;
       }
 
       var faves = new GHFaves();
