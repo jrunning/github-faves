@@ -1,21 +1,18 @@
+// Much inspiration and code ported from defunkt/gist
+// -> https://github.com/defunkt/gist
+
 function Gister(username, apiToken) {
   this.username = username;
   this.apiToken = apiToken;
   this.caller   = arguments.callee.caller;
 }
 
-Gister.prototype.BASE_URI = 'https://gist.github.com/api/v1/json/';
+Gister.prototype.BASE_URI   = 'https://gist.github.com/api/v1/json/';
+Gister.prototype.GIST_URI   = 'https://gist.github.com/';
 Gister.prototype.CREATE_URI = 'https://gist.github.com/gists';
 
-/*
-      data["file_ext[gistfile#{i}]"]      = file[:extension] ? file[:extension] : '.txt'
-      data["file_name[gistfile#{i}]"]     = file[:filename]
-      data["file_contents[gistfile#{i}]"] = file[:input]
-
-*/
-
 // create a new gist with one file
-Gister.prototype.create = function create(filename, data, options, callback) {
+Gister.prototype.createOne = function createOne(filename, data, options, callback) {
   var options   = options || {}
     , xhr       = this.getXHR(callback)
     , postData  = { login : this.username
@@ -42,6 +39,23 @@ Gister.prototype.create = function create(filename, data, options, callback) {
   xhr.send(formData);
 };
 
+// get the JSON content of a gist as an object
+Gister.prototype.getJSON = function(repoId, callback) {
+  this.get(repoId, function(data) {
+    callback(JSON.parse(data));
+  });
+};
+
+// get the content of a gist
+Gister.prototype.get = function get(repoId, callback) {
+  var xhr       = this.getXHR(callback)
+    , uri       = this.GIST_URI + repoId + '.txt'
+  ;
+
+  xhr.open('GET', uri, true);
+  xhr.send();
+};
+
 // TODO: Make these private
 Gister.prototype.getXHR = function getXHR(responseHandler) {
   var xhr = new XMLHttpRequest();
@@ -54,7 +68,6 @@ Gister.prototype.xhrResponseHandler = function xhrResponseHandler(xhr, callback)
   var handleXhrResponse = function handleXhrResponse(evt) {
     if(xhr.readyState == 4 /* COMPLETED */) {
       if(xhr.status == 200) {
-        // TODO: Make sure this is actually working
         callback(xhr.responseText);
       } else {
         callback();
