@@ -6,12 +6,6 @@
   </head>
   <body>
     <script>
-      function bind(f, obj) {
-        return function() {
-          return f.apply(obj, arguments);
-        };
-      }
-      
       var getGistId = function getGistId(username, callback) {
         if(!localStorage['gistId']) {
           var xhr = new XMLHttpRequest();
