@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <script src="gister.js"></script>
+    <script src="lib/Gister.js"></script>
+    <script src="lib/GHFaves.js"></script>
   </head>
   <body>
     <script>
@@ -24,7 +25,7 @@
                 for(var i = 0; i < numGists; i++) {
                   if(gists[i].files[0] == 'github-faves.json') {
                     callback(gists[i].repo);
-                 { hello : "World" }   return;
+                    return;
                   }
                 }
                   
