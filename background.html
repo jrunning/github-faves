@@ -6,38 +6,6 @@
   </head>
   <body>
     <script>
-      var getGistId = function getGistId(username, callback) {
-        if(!localStorage['gistId']) {
-          var xhr = new XMLHttpRequest();
-          xhr.onreadystatechange = function(data) {
-            if (xhr.readyState == 4) {
-              if (xhr.status == 200) {
-                var gists     = JSON.parse(xhr.responseText).gists
-                  , numGists  = gists.length
-                ;
-
-                for(var i = 0; i < numGists; i++) {
-                  if(gists[i].files[0] == 'github-faves.json') {
-                    callback(gists[i].repo);
-                    return;
-                  }
-                }
-                  
-                createGist(callback);
-              } else {
-                // TODO: TEH ERRORZ!
-                callback(null);
-              }
-            }
-          }
-
-          var url = 'http://gist.github.com/api/v1/json/gists/' + username;
-
-          xhr.open('GET', url, true);
-          xhr.send();
-        }
-      };
-
       var faves = new GHFaves();
 
       // big generic listener to all extension messages
