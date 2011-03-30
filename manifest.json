@@ -8,10 +8,13 @@
             , "128" : "sample-128.png"
             }
 , "background_page" : "background.html"
-, "content_scripts" : [ { "matches" : [ "*://github.com/*"
-                                      , "*://www.github.com/*"
-                                      ]
-                        , "js"      : [ "contentscript.js" ]
+, "content_scripts" : [ { "matches"       : [ "*://github.com/*"
+                                            , "*://www.github.com/*"
+                                            ]
+                        , "exclude_globs" : [ "*://github.com/account*"
+                                            , "*://www.github.com/account*"
+                                            ]
+                        , "js"            : [ "contentscript.js" ]
                         }
                       ]
 }
