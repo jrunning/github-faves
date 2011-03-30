@@ -1,18 +1,4 @@
-/**
- * @param data Object JSON decoded response.  Null if the request failed.
- */
-
 (function getCredentials() {
-  (function navToAdminTab() {
-    // simulate a click on the Account Admin tab;
-    // not technically necessary but shows user where we get credentials
-    var tabLink    = document.querySelector('a[href="#admin_bucket"]')
-      , clickEvent = document.createEvent("MouseEvents")
-    ;
-    clickEvent.initEvent("click", true, false);
-    tabLink.dispatchEvent(clickEvent);
-  })();
-
   var flashSuccess = function flashSuccess(username, apiToken) {
     // hijack GitHub's built-in flash notification area
     var flashArea = document.querySelector('.flash-messages')
@@ -82,4 +68,3 @@
     // TODO: TEH ERRORZ
   }
 })();
-

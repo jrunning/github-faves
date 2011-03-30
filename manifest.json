@@ -11,8 +11,8 @@
 , "content_scripts" : [ { "matches"       : [ "*://github.com/*"
                                             , "*://www.github.com/*"
                                             ]
-                        , "exclude_globs" : [ "*://github.com/account*"
-                                            , "*://www.github.com/account*"
+                        , "exclude_globs" : [ "*://github.com/account/admin*"
+                                            , "*://www.github.com/account/admin*"
                                             ]
                         , "js"            : [ "contentscript.js" ]
                         }
